@@ -76,44 +76,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Safety timeout: ensure loading state never hangs indefinitely
+    const safetyTimer = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 1500);
+
     // 1. Fetch initial session
-    supabase.auth.getSession().then(({ data: { session: initialSession }, error: sessionError }) => {
-      if (!mounted) return;
-      if (sessionError) {
-        console.warn('[DocuSaathi Auth] Session check error:', sessionError.message);
-      }
-      setSession(initialSession);
-      setUser(initialSession?.user ?? null);
-      if (initialSession?.user) {
-        fetchProfile(initialSession.user.id);
-      }
-      setLoading(false);
-    }).catch((err) => {
-      if (!mounted) return;
-      console.warn('[DocuSaathi Auth] Unexpected session error:', err);
-      setLoading(false);
-    });
-
-    // 2. Subscribe to auth state changes (login, logout, token refresh, password recovery)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, currentSession) => {
+    try {
+      supabase.auth.getSession().then(({ data: { session: initialSession }, error: sessionError }) => {
         if (!mounted) return;
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setError(null);
-
-        if (currentSession?.user) {
-          await fetchProfile(currentSession.user.id);
-        } else {
-          setProfile(null);
+        if (sessionError) {
+          console.warn('[DocuSaathi Auth] Session check error:', sessionError.message);
+        }
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+        if (initialSession?.user) {
+          fetchProfile(initialSession.user.id);
         }
         setLoading(false);
-      }
-    );
+      }).catch((err) => {
+        if (!mounted) return;
+        console.warn('[DocuSaathi Auth] Unexpected session error:', err);
+        setLoading(false);
+      });
+    } catch (err) {
+      console.warn('[DocuSaathi Auth] Exception invoking getSession:', err);
+      setLoading(false);
+    }
+
+    // 2. Subscribe to auth state changes (login, logout, token refresh, password recovery)
+    let subscription: { unsubscribe: () => void } | null = null;
+    try {
+      const authSub = supabase.auth.onAuthStateChange(
+        async (_event, currentSession) => {
+          if (!mounted) return;
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setError(null);
+
+          if (currentSession?.user) {
+            await fetchProfile(currentSession.user.id);
+          } else {
+            setProfile(null);
+          }
+          setLoading(false);
+        }
+      );
+      subscription = authSub?.data?.subscription ?? null;
+    } catch (err) {
+      console.warn('[DocuSaathi Auth] Exception in onAuthStateChange:', err);
+    }
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      clearTimeout(safetyTimer);
+      if (subscription) subscription.unsubscribe();
     };
   }, [fetchProfile]);
 

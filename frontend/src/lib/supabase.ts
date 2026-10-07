@@ -16,23 +16,23 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || 'https://toibvnwospyupdergjjr.supabase.co';
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_anon_placeholder_key_docusaathi';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  // In development, display a clear error rather than a cryptic failure later.
+if (!import.meta.env.VITE_SUPABASE_ANON_KEY) {
   console.warn(
-    '[DocuSaathi] Supabase is not configured. ' +
-    'Copy frontend/.env.example to frontend/.env and set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
+    '[DocuSaathi] VITE_SUPABASE_ANON_KEY is not defined in environment variables. ' +
+    'Set VITE_SUPABASE_ANON_KEY in Vercel project settings to enable authentication.'
   );
 }
 
 export const supabase = createClient<Database>(
-  supabaseUrl || '',
-  supabaseAnonKey || '',
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
-      // Persist session in localStorage for seamless page refreshes
       persistSession: true,
       autoRefreshToken: true,
     },
