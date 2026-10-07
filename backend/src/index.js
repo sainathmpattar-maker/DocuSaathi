@@ -23,7 +23,11 @@ try {
 
 const app = createApp();
 
-app.listen(env.PORT, () => {
-  console.log(`[DocuSaathi] Backend listening on http://localhost:${env.PORT}`);
-  console.log(`[DocuSaathi] Environment: ${env.NODE_ENV}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(env.PORT, () => {
+    console.log(`[DocuSaathi] Backend listening on http://localhost:${env.PORT}`);
+    console.log(`[DocuSaathi] Environment: ${env.NODE_ENV}`);
+  });
+}
+
+module.exports = app;
