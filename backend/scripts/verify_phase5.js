@@ -17,7 +17,7 @@
 require('dotenv').config();
 const { getSupabaseAdmin } = require('../src/lib/supabase');
 
-const BASE_URL = 'http://localhost:4000';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:4000';
 
 function generateInvoicePdf() {
   const lines = [
