@@ -1,0 +1,17 @@
+# Dependency directories
+node_modules/
+
+# Environment secrets
+.env
+.env.local
+.env.production
+
+# Vite build output
+dist/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

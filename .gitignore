@@ -1,0 +1,23 @@
+# Dependency directories
+node_modules/
+
+# Environment secrets
+.env
+.env.local
+.env.production
+
+# Build output
+dist/
+build/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
